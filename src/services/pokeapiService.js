@@ -24,8 +24,21 @@ async function getPokemons () {
   }
 }
 
+async function getPokemonById (pokemonid) {
+  try {
+    const resource = `/${pokemonid}`
+    const result = (await axios.get(`${BASE_URL}${resource}`)).data
+    const { pokemonCompleteData } = _formatResponseData(result)
+    console.log('pokeapiService :: getPokemonById :: Pokemon', pokemonCompleteData)
+    return pokemonCompleteData
+  } catch (error) {
+    console.log('pokeapiService :: getPokemonById :: error', error.reponse?.data)
+    throw new Error(error.reponse?.data)
+  }
+}
+
 function _formatResponseData (result) {
-  const { id, name, types, sprites } = result
+  const { id, name, types, sprites, abilities, species, stats, height, weight } = result
   const image = sprites.other['official-artwork'].front_default
   const pokemonTypes = types.map(element => {
     const { slot, type } = element
@@ -37,9 +50,16 @@ function _formatResponseData (result) {
   const pokemonMainData = {
     id, name, pokemonTypes, image
   }
+  const pokemonCompleteData = {
+    ...pokemonMainData,
+    details: {
+      abilities, species, stats, height, weight
+    }
+  }
   return {
-    pokemonMainData
+    pokemonMainData,
+    pokemonCompleteData
   }
 }
 
-module.exports = { getPokemons }
+module.exports = { getPokemons, getPokemonById }
